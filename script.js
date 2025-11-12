@@ -1,592 +1,792 @@
-// ========== ANIMAÇÃO DE FUNDO - CONSTELAÇÕES TECNOLÓGICAS ==========
-function createConstellationAnimation() {
-  const canvas = document.getElementById("backgroundAnimationCanvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let particles = [];
-  // Cores baseadas no seu tema
-  const particleColor = "rgba(77, 158, 255, 0.5)"; // --accent-light
-  const lineColor = "rgba(77, 158, 255, 0.1)";
-  const maxDistance = 120; // Distância para conectar
-  let particleCount;
+// ========== FUNÇÕES PARA OS PROBLEMAS ==========
+function toggleHint(problemNumber) {
+    const hint = document.getElementById(`hint-${problemNumber}`);
+    const button = event.target;
+    
+    if (hint.style.display === 'none') {
+        hint.style.display = 'block';
+        button.textContent = 'Ocultar Dica';
+    } else {
+        hint.style.display = 'none';
+        button.textContent = 'Mostrar Dica';
+    }
+}
 
-  function setCanvasSize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // Ajustar contagem de partículas com base no tamanho da tela
-    particleCount = Math.floor((canvas.width * canvas.height) / 15000);
-    if (particleCount > 150) particleCount = 150; // Limite para não sobrecarregar
-  }
+function toggleSolution(problemNumber) {
+    const solution = document.getElementById(`solution-${problemNumber}`);
+    const button = event.target;
+    
+    if (solution.style.display === 'none') {
+        solution.style.display = 'block';
+        button.textContent = 'Ocultar Solução';
+    } else {
+        solution.style.display = 'none';
+        button.textContent = 'Mostrar Solução';
+    }
+}
 
-  class Particle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.radius = Math.random() * 2 + 1;
-      this.vx = (Math.random() - 0.5) * 0.5; // Movimento lento
-      this.vy = (Math.random() - 0.5) * 0.5;
+// ========== ANIMAÇÃO DE FUNDO METÁLICO ==========
+function createMetallicBackground() {
+    const canvas = document.getElementById("backgroundAnimationCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+    const particleColors = [
+        "rgba(184, 184, 184, 0.3)", // Metal claro
+        "rgba(120, 120, 120, 0.3)", // Metal médio
+        "rgba(70, 70, 70, 0.3)",    // Metal escuro
+        "rgba(30, 99, 233, 0.1)"    // Toque azul
+    ];
+    const maxDistance = 100;
+    let particleCount;
+
+    function setCanvasSize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        particleCount = Math.floor((canvas.width * canvas.height) / 18000);
+        if (particleCount > 120) particleCount = 120;
     }
 
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = particleColor;
-      ctx.fill();
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-
-      // Rebater nas bordas
-      if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-      if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-    }
-  }
-
-  function init() {
-    particles = [];
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
-  }
-
-  function connect() {
-    for (let a = 0; a < particles.length; a++) {
-      for (let b = a + 1; b < particles.length; b++) {
-        // Começa de a+1 para evitar duplicatas
-        const dx = particles[a].x - particles[b].x;
-        const dy = particles[a].y - particles[b].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < maxDistance) {
-          ctx.beginPath();
-          ctx.strokeStyle = lineColor;
-          ctx.lineWidth = 0.5;
-          ctx.moveTo(particles[a].x, particles[a].y);
-          ctx.lineTo(particles[b].x, particles[b].y);
-          ctx.stroke();
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.radius = Math.random() * 1.5 + 0.5;
+            this.vx = (Math.random() - 0.5) * 0.3;
+            this.vy = (Math.random() - 0.5) * 0.3;
+            this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
         }
-      }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            
+            // Adicionar brilho metálico
+            ctx.beginPath();
+            ctx.arc(this.x - this.radius/3, this.y - this.radius/3, this.radius/2, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.fill();
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
     }
-  }
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p) => {
-      p.update();
-      p.draw();
+    function init() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function connect() {
+        for (let a = 0; a < particles.length; a++) {
+            for (let b = a + 1; b < particles.length; b++) {
+                const dx = particles[a].x - particles[b].x;
+                const dy = particles[a].y - particles[b].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(120, 120, 120, ${0.1 * (1 - distance/maxDistance)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Adicionar gradiente de fundo metálico
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, "rgba(20, 20, 20, 0.8)");
+        gradient.addColorStop(0.5, "rgba(40, 40, 40, 0.6)");
+        gradient.addColorStop(1, "rgba(20, 20, 20, 0.8)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        particles.forEach((p) => {
+            p.update();
+            p.draw();
+        });
+        connect();
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("resize", () => {
+        setCanvasSize();
+        init();
     });
-    connect();
-    requestAnimationFrame(animate);
-  }
 
-  // Lidar com redimensionamento da janela
-  window.addEventListener("resize", () => {
     setCanvasSize();
     init();
-  });
-
-  // Iniciar
-  setCanvasSize();
-  init();
-  animate();
+    animate();
 }
-
-/*
-// ========== ANIMAÇÃO DE FUNDO ANTIGA (REMOVIDA) ==========
-function createBackgroundAnimation() {
-    // ... código antigo do DNA ...
-}
-*/
 
 // ========== CÁLCULO DE ÁREAS ==========
-// Cálculo da área do triângulo com validação melhorada
-document
-  .getElementById("calcular-triangulo")
-  .addEventListener("click", function () {
-    const base = parseFloat(document.getElementById("base-triangulo").value);
-    const altura = parseFloat(
-      document.getElementById("altura-triangulo").value
-    );
-    const resultado = document.getElementById("resultado-triangulo");
+// Círculo
+document.getElementById("calcular-circulo").addEventListener("click", function () {
+    const raioInput = document.getElementById("raio-circulo").value;
+    const diametroInput = document.getElementById("diametro-circulo").value;
+    const resultado = document.getElementById("resultado-circulo");
     const button = this;
 
-    // Validação
-    if (isNaN(base) || isNaN(altura) || base <= 0 || altura <= 0) {
-      resultado.innerHTML =
-        '<p style="color: #ff6b6b;">⚠️ Por favor, insira valores válidos para base e altura (números positivos).</p>';
-      resultado.style.display = "block";
-      return;
+    let raio;
+    
+    if (raioInput) {
+        raio = parseFloat(raioInput);
+    } else if (diametroInput) {
+        raio = parseFloat(diametroInput) / 2;
+    } else {
+        resultado.innerHTML = '<p style="color: #ff6b6b;">⚠️ Por favor, insira o raio ou o diâmetro.</p>';
+        resultado.style.display = "block";
+        return;
     }
 
-    // Feedback visual
+    if (isNaN(raio) || raio <= 0) {
+        resultado.innerHTML = '<p style="color: #ff6b6b;">⚠️ Por favor, insira um valor válido para o raio ou diâmetro (número positivo).</p>';
+        resultado.style.display = "block";
+        return;
+    }
+
     button.textContent = "Calculando...";
     button.disabled = true;
 
     setTimeout(() => {
-      const area = (base * altura) / 2;
-      resultado.innerHTML = `
-            <p>📐 Área do triângulo:</p>
-            <p><strong>A = (b × h) / 2</strong></p>
-            <p><strong>A = (${base} × ${altura}) / 2 = ${area.toFixed(
-        2
-      )}</strong> unidades quadradas</p>
+        const area = Math.PI * raio * raio;
+        resultado.innerHTML = `
+            <p>● Área do círculo:</p>
+            <p><strong>A = π × r²</strong></p>
+            <p><strong>A = π × ${raio}² = ${area.toFixed(2)}</strong> unidades quadradas</p>
+            <p><small>Usando π ≈ ${Math.PI.toFixed(5)}</small></p>
         `;
-      resultado.style.display = "block";
+        resultado.style.display = "block";
 
-      button.textContent = "Calcular Área";
-      button.disabled = false;
+        button.textContent = "Calcular Área";
+        button.disabled = false;
     }, 500);
-  });
+});
 
-// Cálculo da área do trapézio com validação melhorada
-document
-  .getElementById("calcular-trapezio")
-  .addEventListener("click", function () {
-    const baseMaior = parseFloat(document.getElementById("base-maior").value);
-    const baseMenor = parseFloat(document.getElementById("base-menor").value);
-    const altura = parseFloat(document.getElementById("altura-trapezio").value);
+document.getElementById("limpar-circulo").addEventListener("click", function () {
+    document.getElementById("raio-circulo").value = "";
+    document.getElementById("diametro-circulo").value = "";
+    document.getElementById("resultado-circulo").style.display = "none";
+});
+
+// Sincronizar raio e diâmetro
+document.getElementById("raio-circulo").addEventListener("input", function() {
+    if (this.value) {
+        document.getElementById("diametro-circulo").value = parseFloat(this.value) * 2;
+    }
+});
+
+document.getElementById("diametro-circulo").addEventListener("input", function() {
+    if (this.value) {
+        document.getElementById("raio-circulo").value = parseFloat(this.value) / 2;
+    }
+});
+
+// Trapézio
+document.getElementById("calcular-trapezio").addEventListener("click", function () {
+    const baseMaiorInput = document.getElementById("base-maior").value;
+    const baseMenorInput = document.getElementById("base-menor").value;
+    const alturaInput = document.getElementById("altura-trapezio").value;
     const resultado = document.getElementById("resultado-trapezio");
     const button = this;
 
-    // Validação
-    if (
-      isNaN(baseMaior) ||
-      isNaN(baseMenor) ||
-      isNaN(altura) ||
-      baseMaior <= 0 ||
-      baseMenor <= 0 ||
-      altura <= 0
-    ) {
-      resultado.innerHTML =
-        '<p style="color: #ff6b6b;">⚠️ Por favor, insira valores válidos para as bases e altura (números positivos).</p>';
-      resultado.style.display = "block";
-      return;
+    const baseMaior = parseFloat(baseMaiorInput);
+    const baseMenor = parseFloat(baseMenorInput);
+    const altura = parseFloat(alturaInput);
+
+    if (isNaN(baseMaior) || isNaN(baseMenor) || isNaN(altura) || 
+        baseMaior <= 0 || baseMenor <= 0 || altura <= 0) {
+        resultado.innerHTML = '<p style="color: #ff6b6b;">⚠️ Por favor, insira valores válidos para as bases e altura (números positivos).</p>';
+        resultado.style.display = "block";
+        return;
     }
 
-    if (baseMenor >= baseMaior) {
-      resultado.innerHTML =
-        '<p style="color: #ff6b6b;">⚠️ A base maior deve ser maior que a base menor.</p>';
-      resultado.style.display = "block";
-      return;
-    }
-
-    // Feedback visual
     button.textContent = "Calculando...";
     button.disabled = true;
 
     setTimeout(() => {
-      const area = ((baseMaior + baseMenor) * altura) / 2;
-      resultado.innerHTML = `
-            <p>📊 Área do trapézio:</p>
-            <p><strong>A = [(B + b) × h] / 2</strong></p>
-            <p><strong>A = [(${baseMaior} + ${baseMenor}) × ${altura}] / 2 = ${area.toFixed(
-        2
-      )}</strong> unidades quadradas</p>
+        const area = (baseMaior + baseMenor) * altura / 2;
+        resultado.innerHTML = `
+            <p>● Área do trapézio:</p>
+            <p><strong>A = (B + b) × h / 2</strong></p>
+            <p><strong>A = (${baseMaior} + ${baseMenor}) × ${altura} / 2 = ${area.toFixed(2)}</strong> unidades quadradas</p>
         `;
-      resultado.style.display = "block";
+        resultado.style.display = "block";
 
-      button.textContent = "Calcular Área";
-      button.disabled = false;
+        button.textContent = "Calcular Área";
+        button.disabled = false;
     }, 500);
-  });
+});
 
-// Limpar campos
-document
-  .getElementById("limpar-triangulo")
-  .addEventListener("click", function () {
-    document.getElementById("base-triangulo").value = "";
-    document.getElementById("altura-triangulo").value = "";
-    document.getElementById("resultado-triangulo").style.display = "none";
-  });
-
-document
-  .getElementById("limpar-trapezio")
-  .addEventListener("click", function () {
+document.getElementById("limpar-trapezio").addEventListener("click", function () {
     document.getElementById("base-maior").value = "";
     document.getElementById("base-menor").value = "";
     document.getElementById("altura-trapezio").value = "";
     document.getElementById("resultado-trapezio").style.display = "none";
-  });
+});
 
 // Permitir calcular com Enter
 document.querySelectorAll("input").forEach((input) => {
-  input.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-      const form = this.closest(".interactive-tool");
-      const button = form.querySelector("button");
-      button.click();
-    }
-  });
+    input.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            const form = this.closest(".interactive-tool");
+            const button = form.querySelector("button");
+            button.click();
+        }
+    });
 });
+
+// ========== VISUALIZAÇÃO INTERATIVA ==========
+function initCircleVisualization() {
+    const canvas = document.getElementById("circle-canvas");
+    const ctx = canvas.getContext("2d");
+    const radiusSlider = document.getElementById("circle-radius");
+    const radiusValue = document.getElementById("circle-radius-value");
+    const areaValue = document.getElementById("circle-area-value");
+    
+    let radius = parseFloat(radiusSlider.value);
+    
+    function drawCircle() {
+        // Limpar canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Configurações de desenho
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const visualRadius = radius * 15; // Escala para visualização
+        
+        // Desenhar círculo
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, visualRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(30, 99, 233, 0.3)";
+        ctx.fill();
+        ctx.strokeStyle = "#2d7aff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Desenhar raio
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + visualRadius, centerY);
+        ctx.strokeStyle = "#2060ff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Desenhar centro
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#2060ff";
+        ctx.fill();
+        
+        // Adicionar rótulos
+        ctx.fillStyle = "#fff";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        
+        // Rótulo do raio
+        ctx.fillText("r", centerX + visualRadius/2, centerY - 10);
+        
+        // Calcular e exibir área
+        const area = Math.PI * radius * radius;
+        areaValue.textContent = area.toFixed(2);
+    }
+    
+    // Atualizar valores do slider
+    radiusSlider.addEventListener("input", function() {
+        radius = parseFloat(this.value);
+        radiusValue.textContent = radius;
+        drawCircle();
+    });
+    
+    // Desenhar círculo inicial
+    drawCircle();
+}
+
+function initTrapezoidVisualization() {
+    const canvas = document.getElementById("trapezoid-canvas");
+    const ctx = canvas.getContext("2d");
+    const baseMaiorSlider = document.getElementById("trapezoid-base-maior");
+    const baseMenorSlider = document.getElementById("trapezoid-base-menor");
+    const heightSlider = document.getElementById("trapezoid-height");
+    
+    const baseMaiorValue = document.getElementById("trapezoid-base-maior-value");
+    const baseMenorValue = document.getElementById("trapezoid-base-menor-value");
+    const heightValue = document.getElementById("trapezoid-height-value");
+    const areaValue = document.getElementById("trapezoid-area-value");
+    
+    let baseMaior = parseFloat(baseMaiorSlider.value);
+    let baseMenor = parseFloat(baseMenorSlider.value);
+    let height = parseFloat(heightSlider.value);
+    
+    function drawTrapezoid() {
+        // Limpar canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Configurações de desenho
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Escalas para visualização
+        const scale = 15;
+        const visualBaseMaior = baseMaior * scale;
+        const visualBaseMenor = baseMenor * scale;
+        const visualHeight = height * scale;
+        
+        // Calcular pontos do trapézio
+        const topWidth = visualBaseMenor;
+        const bottomWidth = visualBaseMaior;
+        const topX = centerX - topWidth / 2;
+        const bottomX = centerX - bottomWidth / 2;
+        const topY = centerY - visualHeight / 2;
+        const bottomY = centerY + visualHeight / 2;
+        
+        // Desenhar trapézio
+        ctx.beginPath();
+        ctx.moveTo(topX, topY);
+        ctx.lineTo(topX + topWidth, topY);
+        ctx.lineTo(bottomX + bottomWidth, bottomY);
+        ctx.lineTo(bottomX, bottomY);
+        ctx.closePath();
+        
+        ctx.fillStyle = "rgba(30, 99, 233, 0.3)";
+        ctx.fill();
+        ctx.strokeStyle = "#2d7aff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Desenhar altura
+        ctx.beginPath();
+        ctx.moveTo(centerX, topY);
+        ctx.lineTo(centerX, bottomY);
+        ctx.strokeStyle = "#2060ff";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Adicionar rótulos
+        ctx.fillStyle = "#fff";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        
+        // Rótulo da base menor
+        ctx.fillText("b", centerX, topY - 10);
+        
+        // Rótulo da base maior
+        ctx.fillText("B", centerX, bottomY + 20);
+        
+        // Rótulo da altura
+        ctx.fillText("h", centerX + 15, centerY);
+        
+        // Calcular e exibir área
+        const area = (baseMaior + baseMenor) * height / 2;
+        areaValue.textContent = area.toFixed(2);
+    }
+    
+    // Atualizar valores dos sliders
+    baseMaiorSlider.addEventListener("input", function() {
+        baseMaior = parseFloat(this.value);
+        baseMaiorValue.textContent = baseMaior;
+        drawTrapezoid();
+    });
+    
+    baseMenorSlider.addEventListener("input", function() {
+        baseMenor = parseFloat(this.value);
+        baseMenorValue.textContent = baseMenor;
+        drawTrapezoid();
+    });
+    
+    heightSlider.addEventListener("input", function() {
+        height = parseFloat(this.value);
+        heightValue.textContent = height;
+        drawTrapezoid();
+    });
+    
+    // Desenhar trapézio inicial
+    drawTrapezoid();
+}
+
+// ========== TABS DA VISUALIZAÇÃO ==========
+function initVisualizationTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remover classe active de todos os botões e conteúdos
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Adicionar classe active ao botão clicado
+            button.classList.add('active');
+            
+            // Mostrar o conteúdo correspondente
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+}
 
 // ========== QUIZ ==========
 const quizQuestions = [
-  {
-    question: "Qual é a fórmula para calcular a área de um triângulo?",
-    options: [
-      "A = b × h",
-      "A = (b × h) / 2",
-      "A = π × r²",
-      "A = (B + b) × h / 2"
-    ],
-    correct: 1
-  },
-  {
-    question: "Qual é a fórmula para calcular a área de um trapézio?",
-    options: [
-      "A = b × h",
-      "A = (b × h) / 2",
-      "A = π × r²",
-      "A = (B + b) × h / 2"
-    ],
-    correct: 3
-  },
-  {
-    question: "Em um triângulo, a altura é:",
-    options: [
-      "Sempre igual à base",
-      "A medida perpendicular à base",
-      "Sempre o lado mais longo",
-      "A soma de todos os lados"
-    ],
-    correct: 1
-  },
-  {
-    question: "Um triângulo com base 10 cm e altura 6 cm tem área igual a:",
-    options: ["16 cm²", "30 cm²", "60 cm²", "32 cm²"],
-    correct: 1
-  },
-  {
-    question:
-      "Um trapézio com bases 8 cm e 4 cm e altura 5 cm tem área igual a:",
-    options: ["20 cm²", "30 cm²", "40 cm²", "60 cm²"],
-    correct: 1
-  },
-  {
-    question: "Qual destas figuras sempre tem um par de lados paralelos?",
-    options: ["Triângulo", "Trapézio", "Círculo", "Pentágono"],
-    correct: 1
-  },
-  {
-    question: "A unidade de medida de área é:",
-    options: [
-      "Sempre em metros",
-      "Uma unidade de comprimento",
-      "Uma unidade de comprimento ao quadrado",
-      "Sempre em centímetros"
-    ],
-    correct: 2
-  },
-  {
-    question: "Um triângulo equilátero tem:",
-    options: [
-      "Três lados diferentes",
-      "Dois lados iguais",
-      "Três lados iguais",
-      "Um ângulo reto"
-    ],
-    correct: 2
-  },
-  {
-    question: "A altura de um triângulo:",
-    options: [
-      "É sempre um de seus lados",
-      "Pode estar fora do triângulo",
-      "É sempre menor que a base",
-      "É a soma de dois lados"
-    ],
-    correct: 1
-  },
-  {
-    question: "Em um trapézio, as bases são:",
-    options: [
-      "Os lados não paralelos",
-      "Os lados paralelos",
-      "Sempre os lados mais longos",
-      "Sempre iguais"
-    ],
-    correct: 1
-  },
-  {
-    question: "A área de um triângulo retângulo com catetos 3 cm e 4 cm é:",
-    options: ["7 cm²", "12 cm²", "6 cm²", "5 cm²"],
-    correct: 2
-  },
-  {
-    question:
-      "Se a base de um triângulo dobra e a altura permanece a mesma, a área:",
-    options: ["Permanece a mesma", "Dobra", "Triplica", "Quadruplica"],
-    correct: 1
-  },
-  {
-    question: "Um trapézio isósceles tem:",
-    options: [
-      "Bases iguais",
-      "Lados não paralelos iguais",
-      "Todos os lados iguais",
-      "Ângulos da base diferentes"
-    ],
-    correct: 1
-  },
-  {
-    question: "A fórmula de Heron é usada para calcular a área de:",
-    options: [
-      "Qualquer polígono",
-      "Triângulos quando se conhecem os três lados",
-      "Trapézios",
-      "Círculos"
-    ],
-    correct: 1
-  },
-  {
-    question:
-      "Se a altura de um triângulo é reduzida pela metade e a base permanece a mesma, a área:",
-    options: [
-      "Dobra",
-      "Permanece a mesma",
-      "É reduzida pela metade",
-      "É quadruplicada"
-    ],
-    correct: 2
-  },
-  {
-    question: "Em um trapézio, a altura é:",
-    options: [
-      "A medida de um dos lados não paralelos",
-      "A distância perpendicular entre as bases",
-      "Sempre igual à base menor",
-      "A soma das bases"
-    ],
-    correct: 1
-  },
-  {
-    question: "Um triângulo com área 24 cm² e base 8 cm tem altura igual a:",
-    options: ["3 cm", "6 cm", "12 cm", "4 cm"],
-    correct: 1
-  },
-  {
-    question: "A área de um trapézio com bases 12 cm e 8 cm e altura 5 cm é:",
-    options: ["40 cm²", "50 cm²", "60 cm²", "100 cm²"],
-    correct: 1
-  },
-  {
-    question: "Qual destes NÃO é um tipo de trapézio?",
-    options: [
-      "Trapézio isósceles",
-      "Trapézio escaleno",
-      "Trapézio retângulo",
-      "Trapézio equilátero"
-    ],
-    correct: 3
-  },
-  {
-    question: "Um triângulo com lados 5 cm, 12 cm e 13 cm é:",
-    options: ["Acutângulo", "Obtusângulo", "Equilátero", "Retângulo"],
-    correct: 3
-  },
-  {
-    question:
-      "Se as bases de um trapézio são 10 cm e 6 cm, e a área é 40 cm², a altura é:",
-    options: ["4 cm", "5 cm", "6 cm", "8 cm"],
-    correct: 1
-  },
-  {
-    question:
-      "A área de um triângulo pode ser calculada usando dois lados e o ângulo entre eles através da fórmula:",
-    options: [
-      "A = a × b × cos(θ)",
-      "A = (1/2) × a × b × sen(θ)",
-      "A = a × b × tan(θ)",
-      "A = (a + b) × sen(θ) / 2"
-    ],
-    correct: 1
-  },
-  {
-    question: "Um trapézio com bases iguais é na verdade um:",
-    options: [
-      "Triângulo",
-      "Retângulo", // Assumindo trapézio retângulo, ou paralelogramo em geral
-      "Quadrado",
-      "Losango"
-    ],
-    correct: 1 // Mantendo a lógica do quiz original (Retângulo/Paralelogramo)
-  },
-  {
-    question: "Se a área de um triângulo é 18 cm² e a altura é 6 cm, a base é:",
-    options: ["3 cm", "6 cm", "9 cm", "12 cm"],
-    correct: 1
-  },
-  {
-    question: "A área de um trapézio é sempre:",
-    options: [
-      "Maior que a área de um triângulo com a mesma altura",
-      "A média das áreas das bases",
-      "A soma das áreas de dois triângulos", // Se dividido pela diagonal
-      "O produto da altura pela base menor"
-    ],
-    correct: 2
-  }
+    {
+        question: "Qual é a fórmula para calcular a área de um círculo?",
+        options: [
+            "A = 2 × π × r",
+            "A = π × r²",
+            "A = π × d",
+            "A = (π × r) / 2"
+        ],
+        correct: 1
+    },
+    {
+        question: "Se o raio de um círculo é 7 cm, qual é sua área?",
+        options: [
+            "≈ 43,98 cm²",
+            "≈ 153,94 cm²",
+            "≈ 21,99 cm²",
+            "≈ 307,88 cm²"
+        ],
+        correct: 1
+    },
+    {
+        question: "Qual é a fórmula para calcular a área de um trapézio?",
+        options: [
+            "A = B × b × h",
+            "A = (B + b) × h / 2",
+            "A = B + b + h",
+            "A = (B × b) / h"
+        ],
+        correct: 1
+    },
+    {
+        question: "Se o diâmetro de um círculo é 10 cm, qual é sua área?",
+        options: [
+            "≈ 31,42 cm²",
+            "≈ 78,54 cm²",
+            "≈ 15,71 cm²",
+            "≈ 314,16 cm²"
+        ],
+        correct: 1
+    },
+    {
+        question: "O que representa o símbolo π (pi)?",
+        options: [
+            "A área de um círculo unitário",
+            "A razão entre a circunferência e o raio",
+            "A razão entre a circunferência e o diâmetro",
+            "O perímetro de um círculo"
+        ],
+        correct: 2
+    },
+    {
+        question: "Se a área de um círculo é 50,27 cm², qual é aproximadamente seu raio?",
+        options: [
+            "4 cm",
+            "6 cm",
+            "8 cm",
+            "10 cm"
+        ],
+        correct: 0
+    },
+    {
+        question: "Qual é o valor aproximado de π?",
+        options: [
+            "2,71828",
+            "3,14159",
+            "1,61803",
+            "1,41421"
+        ],
+        correct: 1
+    },
+    {
+        question: "Se o raio de um círculo dobra, o que acontece com sua área?",
+        options: [
+            "Dobra",
+            "Triplica",
+            "Quadruplica",
+            "Permanece a mesma"
+        ],
+        correct: 2
+    },
+    {
+        question: "Qual é a área de um trapézio com base maior 12 cm, base menor 8 cm e altura 5 cm?",
+        options: [
+            "20 cm²",
+            "50 cm²",
+            "100 cm²",
+            "200 cm²"
+        ],
+        correct: 1
+    },
+    {
+        question: "Qual destas fórmulas NÃO calcula a área de um círculo?",
+        options: [
+            "A = π × r²",
+            "A = (π × d²) / 4",
+            "A = 2 × π × r",
+            "A = π × (d/2)²"
+        ],
+        correct: 2
+    },
+    {
+        question: "Se a circunferência de um círculo é 31,42 cm, qual é aproximadamente sua área?",
+        options: [
+            "≈ 25 cm²",
+            "≈ 50 cm²",
+            "≈ 78,5 cm²",
+            "≈ 100 cm²"
+        ],
+        correct: 2
+    },
+    {
+        question: "Qual é a área de um semicírculo com raio 6 cm?",
+        options: [
+            "≈ 56,55 cm²",
+            "≈ 113,10 cm²",
+            "≈ 37,70 cm²",
+            "≈ 18,85 cm²"
+        ],
+        correct: 0
+    },
+    {
+        question: "Quantas vezes a área de um círculo com raio 5 cm é maior que a área de um círculo com raio 2,5 cm?",
+        options: [
+            "2 vezes",
+            "3 vezes",
+            "4 vezes",
+            "5 vezes"
+        ],
+        correct: 2
+    },
+    {
+        question: "Se a área de um círculo é 100π cm², qual é seu raio?",
+        options: [
+            "5 cm",
+            "10 cm",
+            "20 cm",
+            "50 cm"
+        ],
+        correct: 1
+    },
+    {
+        question: "Qual destas afirmações sobre π é FALSA?",
+        options: [
+            "π é um número irracional",
+            "π é a razão entre circunferência e diâmetro",
+            "π pode ser escrito como uma fração exata",
+            "π é aproximadamente 3,14159"
+        ],
+        correct: 2
+    }
 ];
 
-// Renderizar questões do quiz
-function renderQuizQuestions() {
-  const quizContainer = document.getElementById("quiz-questions");
-  quizContainer.innerHTML = ""; // Limpar conteúdo anterior
+let currentQuestion = 0;
+let userAnswers = Array(quizQuestions.length).fill(null);
+let quizSubmitted = false;
 
-  quizQuestions.forEach((q, index) => {
+function renderQuizQuestions() {
+    const quizContainer = document.getElementById("quiz-questions");
+    quizContainer.innerHTML = "";
+
+    const q = quizQuestions[currentQuestion];
     const questionElement = document.createElement("div");
     questionElement.className = "question";
     questionElement.innerHTML = `
-            <h4>${index + 1}. ${q.question}</h4>
-            <div class="options">
-                ${q.options
-                  .map(
+        <h4>${currentQuestion + 1}. ${q.question}</h4>
+        <div class="options">
+            ${q.options
+                .map(
                     (option, i) => `
-                    <div class="option" data-question="${index}" data-option="${i}">
-                        <span class="option-letter">${String.fromCharCode(
-                          65 + i
-                        )}</span>
+                    <div class="option ${userAnswers[currentQuestion] === i ? 'selected' : ''} 
+                    ${quizSubmitted ? (i === q.correct ? 'correct-answer' : (userAnswers[currentQuestion] === i && userAnswers[currentQuestion] !== q.correct ? 'incorrect' : '')) : ''}" 
+                    data-question="${currentQuestion}" data-option="${i}">
+                        <span class="option-letter">${String.fromCharCode(65 + i)}</span>
                         ${option}
                     </div>
                 `
-                  )
-                  .join("")}
-            </div>
-        `;
+                )
+                .join("")}
+        </div>
+    `;
     quizContainer.appendChild(questionElement);
-  });
 
-  // Adicionar event listeners após renderizar
-  document.querySelectorAll(".option").forEach((option) => {
-    option.addEventListener("click", function () {
-      const questionIndex = this.getAttribute("data-question");
-      const optionIndex = this.getAttribute("data-option");
+    updateQuizProgress();
 
-      // Remover seleção anterior nesta questão
-      document
-        .querySelectorAll(`.option[data-question="${questionIndex}"]`)
-        .forEach((opt) => {
-          opt.classList.remove("selected");
+    // Só adiciona event listeners se o quiz não foi submetido
+    if (!quizSubmitted) {
+        document.querySelectorAll(".option").forEach((option) => {
+            option.addEventListener("click", function () {
+                const questionIndex = parseInt(this.getAttribute("data-question"));
+                const optionIndex = parseInt(this.getAttribute("data-option"));
+
+                userAnswers[questionIndex] = optionIndex;
+
+                document
+                    .querySelectorAll(`.option[data-question="${questionIndex}"]`)
+                    .forEach((opt) => {
+                        opt.classList.remove("selected");
+                    });
+
+                this.classList.add("selected");
+            });
         });
-
-      // Selecionar esta opção
-      this.classList.add("selected");
-    });
-  });
+    }
 }
 
-// Verificar respostas do quiz
-document
-  .getElementById("verificar-respostas")
-  .addEventListener("click", function () {
+function updateQuizProgress() {
+    const progressFill = document.getElementById("quiz-progress-fill");
+    const progressText = document.getElementById("quiz-progress-text");
+    
+    const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
+    progressFill.style.width = `${progress}%`;
+    progressText.textContent = `Questão ${currentQuestion + 1} de ${quizQuestions.length}`;
+}
+
+document.getElementById("proxima-questao").addEventListener("click", function() {
+    if (currentQuestion < quizQuestions.length - 1) {
+        currentQuestion++;
+        renderQuizQuestions();
+    }
+});
+
+document.getElementById("anterior-questao").addEventListener("click", function() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        renderQuizQuestions();
+    }
+});
+
+document.getElementById("verificar-respostas").addEventListener("click", function () {
+    // Verifica se todas as questões foram respondidas
+    const unansweredQuestions = userAnswers.filter(answer => answer === null).length;
+    
+    if (unansweredQuestions > 0) {
+        if (confirm(`Você não respondeu ${unansweredQuestions} questão(ões). Deseja verificar mesmo assim?`)) {
+            checkAnswers();
+        }
+    } else {
+        checkAnswers();
+    }
+});
+
+function checkAnswers() {
+    quizSubmitted = true;
+    
     let score = 0;
     const totalQuestions = quizQuestions.length;
 
+    // Contabiliza as respostas corretas
     quizQuestions.forEach((q, index) => {
-      const selectedOption = document.querySelector(
-        `.option[data-question="${index}"].selected`
-      );
-      const correctOption = document.querySelector(
-        `.option[data-question="${index}"][data-option="${q.correct}"]`
-      );
-
-      if (selectedOption) {
-        if (
-          parseInt(selectedOption.getAttribute("data-option")) === q.correct
-        ) {
-          score++;
-          selectedOption.classList.add("correct");
-        } else {
-          selectedOption.classList.add("incorrect");
-          correctOption.classList.add("correct-answer");
+        if (userAnswers[index] === q.correct) {
+            score++;
         }
-      } else {
-        // Se não respondeu, mostrar a correta
-        correctOption.classList.add("correct-answer");
-      }
     });
 
-    // Mostrar resultados
+    // Re-renderiza todas as questões para mostrar as cores corretas
+    renderQuizQuestions();
+    
+    // Desabilita os botões de navegação
+    document.getElementById("anterior-questao").disabled = true;
+    document.getElementById("proxima-questao").disabled = true;
+    document.getElementById("verificar-respostas").disabled = true;
+
     showQuizResults(score, totalQuestions);
-  });
-
-// Mostrar resultados do quiz
-function showQuizResults(score, total) {
-  const results = document.getElementById("quiz-results");
-  const scoreText = document.getElementById("score-text");
-  const performanceMessage = document.getElementById("performance-message");
-
-  const percentage = (score / total) * 100;
-
-  scoreText.textContent = `Você acertou ${score} de ${total} questões! (${percentage.toFixed(
-    1
-  )}%)`;
-
-  if (percentage >= 90) {
-    performanceMessage.textContent =
-      "🎉 Excelente! Você domina completamente o conteúdo sobre áreas!";
-    performanceMessage.style.color = "#00d4aa";
-  } else if (percentage >= 70) {
-    performanceMessage.textContent =
-      "👍 Muito bom! Você tem um ótimo conhecimento sobre áreas.";
-    performanceMessage.style.color = "#4d9eff";
-  } else if (percentage >= 50) {
-    performanceMessage.textContent =
-      "💡 Bom! Continue estudando para melhorar seu desempenho.";
-    performanceMessage.style.color = "#ffb74d";
-  } else {
-    performanceMessage.textContent =
-      "📚 Estude um pouco mais os conceitos de área e tente novamente!";
-    performanceMessage.style.color = "#ff6b6b";
-  }
-
-  results.style.display = "block";
-  results.scrollIntoView({ behavior: "smooth" });
 }
 
-// Reiniciar quiz
-document
-  .getElementById("reiniciar-quiz")
-  .addEventListener("click", function () {
+function showQuizResults(score, total) {
+    const results = document.getElementById("quiz-results");
+    const scoreText = document.getElementById("score-text");
+    const performanceMessage = document.getElementById("performance-message");
+    const scoreCircle = document.getElementById("score-circle");
+    const scorePercentage = document.getElementById("score-percentage");
+
+    const percentage = (score / total) * 100;
+    const circumference = 339.292; // 2 * π * 54
+    const offset = circumference - (percentage / 100) * circumference;
+
+    // Animação do círculo de progresso
+    setTimeout(() => {
+        scoreCircle.style.strokeDashoffset = offset;
+        scorePercentage.textContent = `${percentage.toFixed(0)}%`;
+    }, 100);
+
+    scoreText.textContent = `Você acertou ${score} de ${total} questões! (${percentage.toFixed(1)}%)`;
+
+    if (percentage >= 90) {
+        performanceMessage.textContent = "🎉 Excelente! Você domina completamente o conteúdo sobre área do círculo e trapézio!";
+        performanceMessage.style.color = "#00d4aa";
+    } else if (percentage >= 70) {
+        performanceMessage.textContent = "👍 Muito bom! Você tem um ótimo conhecimento sobre área do círculo e trapézio.";
+        performanceMessage.style.color = "#2d7aff";
+    } else if (percentage >= 50) {
+        performanceMessage.textContent = "💡 Bom! Continue estudando para melhorar seu desempenho.";
+        performanceMessage.style.color = "#ffb74d";
+    } else {
+        performanceMessage.textContent = "📚 Estude um pouco mais os conceitos de área do círculo e trapézio e tente novamente!";
+        performanceMessage.style.color = "#ff6b6b";
+    }
+
+    results.style.display = "block";
+    results.scrollIntoView({ behavior: "smooth" });
+}
+
+document.getElementById("reiniciar-quiz").addEventListener("click", function () {
+    currentQuestion = 0;
+    userAnswers = Array(quizQuestions.length).fill(null);
+    quizSubmitted = false;
+    
+    // Reabilita os botões de navegação
+    document.getElementById("anterior-questao").disabled = false;
+    document.getElementById("proxima-questao").disabled = false;
+    document.getElementById("verificar-respostas").disabled = false;
+
+    // Remove todas as classes de estado das opções
     document.querySelectorAll(".option").forEach((option) => {
-      option.classList.remove(
-        "selected",
-        "correct",
-        "incorrect",
-        "correct-answer"
-      );
+        option.classList.remove("selected", "correct", "incorrect", "correct-answer");
     });
 
     document.getElementById("quiz-results").style.display = "none";
-    document
-      .getElementById("quiz-questions")
-      .scrollIntoView({ behavior: "smooth" });
-  });
+    renderQuizQuestions();
+    document.getElementById("quiz-questions").scrollIntoView({ behavior: "smooth" });
+});
 
 // ========== NAVEGAÇÃO SUAVE ==========
 document.querySelectorAll("nav a").forEach((anchor) => {
-  anchor.addEventListener("click", function (e) {
-    e.preventDefault();
-    const targetId = this.getAttribute("href");
-    const targetElement = document.querySelector(targetId);
+    anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute("href");
+        const targetElement = document.querySelector(targetId);
 
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  });
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    });
 });
 
 // ========== INICIALIZAÇÃO ==========
 document.addEventListener("DOMContentLoaded", function () {
-  // Criar animação de fundo
-  // createBackgroundAnimation(); // <-- Função antiga removida
-  createConstellationAnimation(); // <-- Nova função
-
-  // Renderizar questões do quiz
-  renderQuizQuestions();
+    createMetallicBackground();
+    initCircleVisualization();
+    initTrapezoidVisualization();
+    initVisualizationTabs();
+    renderQuizQuestions();
 });
